@@ -55,10 +55,10 @@ print *,"1)  Reading DEM file "
 open (1,file='DEM.txt') 
 read (1,'(a14,i15)') char_aux,n_col
 read (1,'(a14,i15)') char_aux,n_raw
-read (1,'')
-read (1,'')
+read (1,'(a)')
+read (1,'(a)')
 read (1,'(a14,f15.7,i15)') char_aux,dx,res_fact
-read (1,'')
+read (1,'(a)')
 allocate(mat_z(n_raw,n_col))
 mat_z = 0.d0
 do i=1,n_raw
