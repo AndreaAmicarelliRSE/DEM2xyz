@@ -1,5 +1,5 @@
 # Variables to be updated 
-VERSION = 1_0
+VERSION = 1_0_master
 #    bin, debug
 EXECUTION = bin
 #    -O1 (bin), -g -O0 -fbacktrace -C (gfortran debug),
