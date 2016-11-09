@@ -70,7 +70,7 @@ write(*,*) "End Reading DEM file "
 ! 2) Writing xyz file (start)
 write(*,*) "2)  Writing xyz file "
 open(2,file="xyz.txt")
-write(2,'(a)') '        x(m)       y(m)        z(m)        z(m)'
+write(2,'(a)') '        x(m)       y(m)        z(m)        z   '
 n_points = n_raw*n_col/res_fact/res_fact
 write(*,'(a,i15)') 'Number of vertices in the output "xyz" file: ',n_points
 do i=1,n_raw,res_fact
