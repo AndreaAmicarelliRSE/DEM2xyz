@@ -33,7 +33,7 @@ PROGRAM DEM2xyz
 !------------------------
 implicit none
 integer :: i_in,j_in,i_out,j_out,n_col_in,n_col_out,n_raw,res_fact,n_points_in
-integer :: n_points_out
+integer :: n_points_out,i_aux,j_aux
 double precision :: dx,dy,abs_mean_latitude,denom,distance,x_in,x_out,y_in,y_out
 character(len=100) :: char_aux
 double precision,dimension(:,:),allocatable :: mat_z_in,mat_z_out
@@ -104,12 +104,16 @@ do j_out=1,n_col_out,res_fact
       if (abs_mean_latitude>=0.d0) then      
 ! Interpolation: inverse of the distance**2
          denom = 0.d0
-         do j_in=1,n_col_in
-            do i_in=1,n_raw
+         j_aux = nint((j_out - 0.5) * real(dy / dx) + 0.5)
+         i_aux = i_out
+         do j_in=(j_aux-1),(j_aux+1)
+            do i_in=(i_aux-1),(i_aux+1)
+               if ((i_in<1).or.(i_in>n_raw).or.(j_in<1).or.(j_in>n_col_in))    &
+                  cycle
                x_in = (j_in - 1) * dx + dx / 2.d0
                y_in = (n_raw + 1 - i_in) * dy - dy / 2.d0
                distance = dsqrt((x_in - x_out) ** 2 + (y_in - y_out) ** 2)
-               if (distance<=(dx*10.d0)) then
+               if (distance<=dy) then
                   mat_z_out(i_out,j_out) = mat_z_out(i_out,j_out) +            &
                                            mat_z_in(i_in,j_in) / distance ** 2
                   denom = denom + 1.d0 / distance ** 2
