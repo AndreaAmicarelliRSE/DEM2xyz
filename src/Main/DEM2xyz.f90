@@ -133,17 +133,42 @@ write(*,*) "***DEM2xyz is running:"
 write(*,*) "This subroutine reads a DEM file"
 write(*,*) "    and writes a corresponding xyz file." 
 write(*,*) "Algorithm:"
-write(*,*) "   1) Reading DEM file and pre-processing. "
+write(*,*) "   1) Reading DEM file, DEM2xyz main input file and pre-processing."
 write(*,*) "   2) Eventual grid interpolation, eventual digging/filling DEM ", &
    "regions and writing xyz file. "
-write(*,*) "1)  Reading DEM file and pre-processing. "
-open(1,file='DEM.txt')
+write(*,*) "1)  Reading DEM file, DEM2xyz main input file and pre-processing. "
+open(1,file='DEM.dem')
 read(1,'(a14,i15)') char_aux,n_col_in
 read(1,'(a14,i15)') char_aux,n_raw
 read(1,'(a)')
 read(1,'(a)')
-read(1,'(a14,f15.7,i15,f15.7)') char_aux,dy,res_fact,abs_mean_latitude
+read(1,'(a14,f15.7)') char_aux,dy
+allocate(mat_z_in(n_raw,n_col_in))
+mat_z_in = 0.d0
+read(1,'(a)')
+do i_in=1,n_raw
+   read(1,*) mat_z_in(i_in,:)
+enddo
+close(1)
+open(1,file='DEM2xyz.inp')
+read(1,*) res_fact,abs_mean_latitude,n_digging_regions
+if (n_digging_regions>0) then
+   allocate(n_digging_vertices(n_digging_regions))
+   allocate(z_digging_regions(n_digging_regions))
+   allocate(digging_vertices(n_digging_regions,6,2))
+   n_digging_vertices(:) = 0
+   z_digging_regions(:) = 0.d0
+   digging_vertices(:,:,:) = 0.d0
+   do i_reg=1,n_digging_regions
+      read(1,*) z_digging_regions(i_reg),n_digging_vertices(i_reg)
+      do j_aux=1,n_digging_vertices(i_reg)
+         read (1,*) digging_vertices(i_reg,j_aux,1:2)
+      enddo
+   enddo
+endif
+close(1)
 if (abs_mean_latitude>=0.d0) then
+! Conversion degrees to radians 
 abs_mean_latitude = abs_mean_latitude / 180.d0 * 3.1415926
 ! Conversion (lon,lat) in (°) to (X,Y) in (m) for dx and dy
 ! Linear unit discretization along the same parallel/latitude due to changing 
@@ -160,29 +185,9 @@ abs_mean_latitude = abs_mean_latitude / 180.d0 * 3.1415926
       dx = dy
       n_col_out = n_col_in
 endif
-allocate(mat_z_in(n_raw,n_col_in))
 allocate(mat_z_out(n_raw,n_col_out))
-mat_z_in = 0.d0
 mat_z_out = 0.d0
-read(1,'(a)')
-read(1,*) n_digging_regions
-allocate(n_digging_vertices(n_digging_regions))
-allocate(z_digging_regions(n_digging_regions))
-allocate(digging_vertices(n_digging_regions,6,2))
-n_digging_vertices(:) = 0
-z_digging_regions(:) = 0.d0
-digging_vertices(:,:,:) = 0.d0
-do i_reg=1,n_digging_regions
-   read(1,*) z_digging_regions(i_reg),n_digging_vertices(i_reg)
-   do j_aux=1,n_digging_vertices(i_reg)
-      read (1,*) digging_vertices(i_reg,j_aux,1:2)
-   enddo
-enddo
-do i_in=1,n_raw
-   read(1,*) mat_z_in(i_in,:)
-enddo
-close(1)
-write(*,*) "End Reading DEM file and pre-processing. "
+write(*,*) "End Reading DEM file, DEM2xyz main input file  and pre-processing. "
 write(*,*) "2) Eventual grid interpolation, eventual digging/filling DEM ",    &
    "regions and writing xyz file. "
 open(2,file="xyz.txt")
