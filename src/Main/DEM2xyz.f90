@@ -22,7 +22,31 @@
 !              a non-negative value, the following conversion takes place 
 !              "(lon,lat) in (°) to (X,Y) in (m)". In this case, an 
 !              interpolation (weighted on the square of the distance) is 
-!              carried out to provide a uniform Cartesian output grid in (X,Y).
+!              carried out to provide a uniform Cartesian output grid in (X,Y). 
+!              The height of the DEM points which belong to the digging/filling 
+!              regions (provided in input) is modified. After this treatment, 
+!              each digging/filling region has null slope. Variables:
+!              n_col_in: number of columns in the input DEM
+!              n_col_out: number of columns in the output DEM
+!              n_raw: number of raws in the input/output DEM
+!              res_fact: resolution factor (ratio between the output and the 
+!                 input spatial resolution)
+!              n_points_in: number of input vertices
+!              n_points_out: number of output vertices
+!              n_digging_regions: number of digging/filling regions
+!              dx,dy: spatial resolution -final values in (m)-
+!              abs_mean_latitude: absolute value of the latitude of the DEM 
+!                 barycentre
+!              x_in,y_in: horizontal coordinates in input -(m) or (°)- 
+!              x_out,y_out: horizontal coordinates in output (m)
+!              n_digging_vertices(n_digging_regions): number of vertices of the 
+!                 polygon representing a digging/filling region (3-6)
+!              z_digging_regions(n_digging_regions): height of the 
+!                 digging/filling region
+!              digging_certices(n_digging_regions,6,2): output X/Y-coordinates 
+!                 (m) of the vertices of the digging/filling regions
+!              mat_z_in(n_raw_n_col_in): input DEM
+!              mat_z_out(n_raw_n_col_out): output DEM
 !-------------------------------------------------------------------------------
 PROGRAM DEM2xyz
 !------------------------
@@ -33,19 +57,74 @@ PROGRAM DEM2xyz
 !------------------------
 implicit none
 integer :: i_in,j_in,i_out,j_out,n_col_in,n_col_out,n_raw,res_fact,n_points_in
-integer :: n_points_out,i_aux,j_aux
+integer :: n_points_out,i_aux,j_aux,n_digging_regions,i_reg,test
 double precision :: dx,dy,abs_mean_latitude,denom,distance,x_in,x_out,y_in,y_out
+double precision :: point(2)
 character(len=100) :: char_aux
+integer,dimension(:),allocatable :: n_digging_vertices
+double precision,dimension(:),allocatable :: z_digging_regions
 double precision,dimension(:,:),allocatable :: mat_z_in,mat_z_out
+double precision,dimension(:,:,:),allocatable :: digging_vertices
 !------------------------
 ! Explicit interfaces
 !------------------------
+interface
+   subroutine point_inout_convex_non_degenerate_polygon(point,n_sides,         &
+                                                        point_pol_1,           &
+                                                        point_pol_2,           &
+                                                        point_pol_3,           &
+                                                        point_pol_4,           &
+                                                        point_pol_5,           &
+                                                        point_pol_6,test)
+      implicit none
+      integer(4),intent(in) :: n_sides
+      double precision,intent(in) :: point(2),point_pol_1(2),point_pol_2(2)
+      double precision,intent(in) :: point_pol_3(2),point_pol_4(2)
+      double precision,intent(in) :: point_pol_5(2),point_pol_6(2)
+      integer(4),intent(inout) :: test
+      double precision :: dis1,dis2
+      double precision :: normal(2)
+   end subroutine point_inout_convex_non_degenerate_polygon
+end interface
+interface
+   subroutine point_inout_hexagon(point,point_pol_1,point_pol_2,point_pol_3,   &
+                                  point_pol_4,point_pol_5,point_pol_6,test)
+      implicit none
+      double precision,intent(in) :: point(2),point_pol_1(2),point_pol_2(2)
+      double precision,intent(in) :: point_pol_3(2),point_pol_4(2)
+      double precision,intent(in) :: point_pol_5(2),point_pol_6(2)
+      integer(4),intent(inout) :: test
+      integer(4) :: test1,test2,test3,test4
+   end subroutine point_inout_hexagon
+end interface
+interface
+   subroutine point_inout_pentagon(point,point_pol_1,point_pol_2,point_pol_3,  &
+                                   point_pol_4,point_pol_5,test)
+      implicit none
+      double precision,intent(in) :: point(2),point_pol_1(2),point_pol_2(2)
+      double precision,intent(in) :: point_pol_3(2),point_pol_4(2)
+      double precision,intent(in) :: point_pol_5(2)
+      integer(4),intent(inout) :: test
+      integer(4) :: test1,test2,test3
+   end subroutine point_inout_pentagon
+end interface
+interface
+   subroutine point_inout_quadrilateral(point,point_pol_1,point_pol_2,         &
+                                        point_pol_3,point_pol_4,test)
+      implicit none
+      double precision,intent(in) :: point(2),point_pol_1(2),point_pol_2(2)
+      double precision,intent(in) :: point_pol_3(2),point_pol_4(2)
+      integer(4),intent(inout) :: test
+      integer(4) :: test1,test2
+   end subroutine point_inout_quadrilateral
+end interface
 !------------------------
 ! Allocations
 !------------------------
 !------------------------
 ! Initializations
 !------------------------
+n_digging_regions = 0
 !------------------------
 ! Statements
 !------------------------
@@ -54,10 +133,11 @@ write(*,*) "***DEM2xyz is running:"
 write(*,*) "This subroutine reads a DEM file"
 write(*,*) "    and writes a corresponding xyz file." 
 write(*,*) "Algorithm:"
-write(*,*) "   1) Reading DEM file and pre-processing "
-write(*,*) "   2) Eventual grid interpolation and writing xyz file "
-write(*,*) "1)  Reading DEM file and pre-processing "
-open(1,file='DEM.txt') 
+write(*,*) "   1) Reading DEM file and pre-processing. "
+write(*,*) "   2) Eventual grid interpolation, eventual digging/filling DEM ", &
+   "regions and writing xyz file. "
+write(*,*) "1)  Reading DEM file and pre-processing. "
+open(1,file='DEM.txt')
 read(1,'(a14,i15)') char_aux,n_col_in
 read(1,'(a14,i15)') char_aux,n_raw
 read(1,'(a)')
@@ -67,11 +147,11 @@ if (abs_mean_latitude>=0.d0) then
 abs_mean_latitude = abs_mean_latitude / 180.d0 * 3.1415926
 ! Conversion (lon,lat) in (°) to (X,Y) in (m) for dx and dy
 ! Linear unit discretization along the same parallel/latitude due to changing 
-! in longitude according to the DEM input discretization 
+! in longitude according to the DEM input discretization
    dx = dy * (111412.84d0 * dcos(abs_mean_latitude) - 93.5d0 * dcos(3.d0 *     &
         abs_mean_latitude) + 0.118d0 * dcos(5.d0 * abs_mean_latitude))
 ! Linear unit discretization along the same meridian/longitude due to changing 
-! in latitude according to the DEM input discretization 
+! in latitude according to the DEM input discretization
    dy = dy * (111132.92d0 - 559.82d0 * dcos(2.d0 * abs_mean_latitude) +        &
         1.175d0 * dcos(4.d0 * abs_mean_latitude) - 0.0023d0 * dcos(6.d0 *      &
         abs_mean_latitude))
@@ -80,17 +160,31 @@ abs_mean_latitude = abs_mean_latitude / 180.d0 * 3.1415926
       dx = dy
       n_col_out = n_col_in
 endif
-read(1,'(a)')
 allocate(mat_z_in(n_raw,n_col_in))
 allocate(mat_z_out(n_raw,n_col_out))
 mat_z_in = 0.d0
 mat_z_out = 0.d0
+read(1,'(a)')
+read(1,*) n_digging_regions
+allocate(n_digging_vertices(n_digging_regions))
+allocate(z_digging_regions(n_digging_regions))
+allocate(digging_vertices(n_digging_regions,6,2))
+n_digging_vertices(:) = 0
+z_digging_regions(:) = 0.d0
+digging_vertices(:,:,:) = 0.d0
+do i_reg=1,n_digging_regions
+   read(1,*) z_digging_regions(i_reg),n_digging_vertices(i_reg)
+   do j_aux=1,n_digging_vertices(i_reg)
+      read (1,*) digging_vertices(i_reg,j_aux,1:2)
+   enddo
+enddo
 do i_in=1,n_raw
    read(1,*) mat_z_in(i_in,:)
 enddo
 close(1)
-write(*,*) "End Reading DEM file and pre-processing "
-write(*,*) "2)  Eventual grid interpolation and writing xyz file "
+write(*,*) "End Reading DEM file and pre-processing. "
+write(*,*) "2) Eventual grid interpolation, eventual digging/filling DEM ",    &
+   "regions and writing xyz file. "
 open(2,file="xyz.txt")
 write(2,'(a)') '        x(m)       y(m)        z(m)        z   '
 n_points_in = n_raw * n_col_in / res_fact / res_fact
@@ -126,16 +220,49 @@ do j_out=1,n_col_out,res_fact
 ! No interpolation (dx=dy)
             mat_z_out(i_out,j_out) = mat_z_in(i_out,j_out)
       endif
+      do i_reg=1,n_digging_regions
+         test = 0
+         point(1) = x_out
+         point(2) = y_out
+         select case(n_digging_vertices(i_reg))
+            case(3)
+               call point_inout_convex_non_degenerate_polygon(point,3,         &
+                  digging_vertices(i_reg,1,1:2),digging_vertices(i_reg,2,1:2), &
+                  digging_vertices(i_reg,3,1:2),point,point,point,test)
+            case(4)
+               call point_inout_quadrilateral(point,                           &
+                  digging_vertices(i_reg,1,1:2),digging_vertices(i_reg,2,1:2), &
+                  digging_vertices(i_reg,3,1:2),digging_vertices(i_reg,4,1:2), &
+                  test)
+            case(5)
+               call point_inout_pentagon(point,                                &
+                  digging_vertices(i_reg,1,1:2),digging_vertices(i_reg,2,1:2), &
+                  digging_vertices(i_reg,3,1:2),digging_vertices(i_reg,4,1:2), &
+                  digging_vertices(i_reg,5,1:2),test)
+            case(6)
+               call point_inout_hexagon(point,digging_vertices(i_reg,1,1:2),   &
+                  digging_vertices(i_reg,2,1:2),digging_vertices(i_reg,3,1:2), &
+                  digging_vertices(i_reg,4,1:2),digging_vertices(i_reg,5,1:2), &
+                  digging_vertices(i_reg,6,1:2),test)
+         endselect
+         if (test>0) then
+            mat_z_out(i_out,j_out) = z_digging_regions(i_reg)
+         endif
+      enddo
       write(2,'(4(F12.4))') x_out,y_out,mat_z_out(i_out,j_out),                &
          mat_z_out(i_out,j_out)
    enddo
 enddo
 close(2)
-write(*,*) "End Eventual grid interpolation and writing xyz file "
+write(*,*) "End Eventual grid interpolation, eventual digging/filling DEM ",   &
+   "regions and writing xyz file. "
 !------------------------
 ! Deallocations
 !------------------------
 deallocate(mat_z_in)
 deallocate(mat_z_out)
-write(*,*) "***  DEM2xyz has terminated "
+deallocate(n_digging_vertices)
+deallocate(z_digging_regions)
+deallocate(digging_vertices)
+write(*,*) "***  DEM2xyz has terminated. "
 end program DEM2xyz

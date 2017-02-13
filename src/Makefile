@@ -11,7 +11,7 @@ COMPILER = gfortran
 OMP_FLAG = 
 EXE_DIR = ../$(EXECUTION)/
 SOURCES = \
-$(wildcard ./*/*.f90)
+$(wildcard ./Geometry/*.f90)
 # Other variables
 MAIN_FILE_ROOT = ./Main/DEM2xyz
 CODE = $(EXE_DIR)DEM2xyz_v_$(VERSION)_$(COMPILER)_$(EXECUTION)
@@ -20,7 +20,7 @@ OBJECTS = $(patsubst %.f90,%.o,$(SOURCES))
 #    Correct sequence for compile+link:
 #       make touch
 #       make 
-all: compile_main 
+all: compile link remove 
 compile_main:
 	touch $(CODE).x
 	$(COMPILER) $(MAIN_FILE_ROOT).f90 -o $(CODE).x $(OMP_FLAG) $(COMPILATION_FLAGS)
