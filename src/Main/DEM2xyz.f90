@@ -77,7 +77,7 @@
 PROGRAM DEM2xyz
 !------------------------
 ! Modules
-!------------------------ 
+!------------------------
 !------------------------
 ! Declarations
 !------------------------
@@ -367,7 +367,7 @@ do j_out=1,n_col_out,res_fact
             endif
          endif
       enddo
-! Detectio nof the digging/filling regions      
+! Detection of the digging/filling regions      
       do i_reg=1,n_digging_regions
          test_integer = 0
          point(1) = x_out
@@ -450,8 +450,8 @@ if (n_bathymetries>0) then
                   dis,normal)
 ! Position of a second point belonging to the line r_iC (beyond the centreline 
 ! "point")
-               point_plus_normal(1) = point(1) + normal(1)
-               point_plus_normal(2) = point(2) + normal(2)
+               point_plus_normal(1) = point(1) + 1000.d0 * normal(1)
+               point_plus_normal(2) = point(2) + 1000.d0 * normal(2)
 ! point_coast
                point_coast(:) = -9.d8
                min_dis2 = 9.d8
@@ -503,7 +503,6 @@ if (n_bathymetries>0) then
                   stop
                endif
 ! Bathymetry height at the intersection point Pint (linear interpolation)
-
                dis_Pdown_Pint = dsqrt((pos_res_downstream(i_bath,1) - Pint(1)) &
                                 ** 2 + (pos_res_downstream(i_bath,2) -         &
                                 Pint(2)) ** 2)
@@ -512,11 +511,12 @@ if (n_bathymetries>0) then
                         z_downstream(i_bath))
 ! Distance (projected along the horizontal) between the coast point and the 
 ! line r_down_up (or the point Pint)
-               dis_Pint_Pcoast = abs(dis) + dsqrt((point_coast(1) - Pint(1))   &
-                                 ** 2 + (point_coast(2) - Pint(2)) ** 2)
+               dis_Pint_Pcoast = dsqrt((point_coast(1) - Pint(1)) ** 2 +       &
+                                 (point_coast(2) - Pint(2)) ** 2)
 ! Bathymetry height at the inner reservoir point (linear interpolation)
-               mat_z_out(i_out,j_out) = z_Pint + dabs(dis / dis_Pint_Pcoast)   &
-                                        * (z_FS(i_bath) - z_Pint)
+               mat_z_out(i_out,j_out) = z_Pint + min(dabs(dis /                &
+                                        dis_Pint_Pcoast),1.d0) * (z_FS(i_bath) &
+                                        - z_Pint)
 ! To update the estimated reservoir volume
                volume_res_est(i_bath) = volume_res_est(i_bath) + (z_FS(i_bath) &
                                         - mat_z_out(i_out,j_out)) * (dy ** 2)
@@ -533,8 +533,15 @@ if (n_bathymetries>0) then
                   endif
                   weight(i_bath,i_out,j_out) = 2.d0 * (aux_scalar +            &
                                                aux_scalar_2 * aux_scalar_3) *  &
-                                               (1.d0 - dabs(dis /              &
-                                               dis_Pint_Pcoast))
+                                               (1.d0 - min(dabs(dis /          &
+                                               dis_Pint_Pcoast),1.d0))
+                  write(*,*) "weight(i_bath,i_out,j_out): ",                   &
+                     weight(i_bath,i_out,j_out)
+                  write(*,*) "aux_scalar: ",aux_scalar
+                  write(*,*) "aux_scalar_2",aux_scalar_2
+                  write(*,*) "aux_scalar_3",aux_scalar_3
+                  write(*,*) "dis",dis
+                  write(*,*) "dis_Pint_Pcoast",dis_Pint_Pcoast
 ! To update the weight sum
                   weight_sum(i_bath) = weight_sum(i_bath) +                    &
                                        weight(i_bath,i_out,j_out)
@@ -605,6 +612,17 @@ if (n_bathymetries>0) then
       enddo
    enddo
    close(14)
+   open(15,file="weight_bathymetry_1.txt")
+   write(15,'(a)') '        x(m)       y(m)        z(m)        z   '
+   do j_out=1,n_col_out,res_fact
+      do i_out=1,n_row,res_fact
+         x_out = (j_out - 1) * dy + dy / 2.d0
+         y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
+         write(15,'(4(F12.4))') x_out,y_out,weight(1,i_out,j_out),             &
+            weight(1,i_out,j_out)
+      enddo
+   enddo
+   close(15)
 endif
 !------------------------
 ! Deallocations
