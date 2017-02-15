@@ -16,13 +16,11 @@
 ! along with DEM2xyz. If not, see <http://www.gnu.org/licenses/>.
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-! This file is copied and pasted from SPHERA v.8.0 (RSE SpA).
+! Program unit: line_line_intersection_2D 
+! Description: Computation of the intersection between two lines in 2D.     
 !-------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-! Program unit: distance_point_line_2D  
-! Description: Computation of the distance between a point and a plane.     
-!-------------------------------------------------------------------------------
-subroutine distance_point_line_2D(P0,P1_line,P2_line,dis,normal)
+subroutine line_line_intersection_2D(P1_line1,P2_line1,P1_line2,P2_line2,Pint, &
+                                     test)
 !------------------------
 ! Modules
 !------------------------ 
@@ -30,10 +28,10 @@ subroutine distance_point_line_2D(P0,P1_line,P2_line,dis,normal)
 ! Declarations
 !------------------------
 implicit none
-double precision,intent(IN) :: P0(2),P1_line(2),P2_line(2)
-double precision,intent(INOUT) :: dis
-double precision,intent(INOUT) :: normal(2)
-double precision :: a,b,c
+double precision,intent(in) :: P1_line1(2),P2_line1(2),P1_line2(2),P2_line2(2)
+logical,intent(out) :: test
+double precision,intent(out) :: Pint(2)
+double precision :: aa,bb,cc,dd,ee,ff,denom
 !------------------------
 ! Explicit interfaces
 !------------------------
@@ -43,18 +41,26 @@ double precision :: a,b,c
 !------------------------
 ! Initializations
 !------------------------
+test = .false.
+Pint(:) = -9.d8
 !------------------------
 ! Statements
 !------------------------
-a = (P2_line(2) - P1_line(2))
-b = -(P2_line(1) - P1_line(1)) 
-c = -(a * P1_line(1) + b * P1_line(2))
-normal(1) = a / dsqrt(a ** 2 + b ** 2)
-normal(2) = b / dsqrt(a ** 2 + b ** 2)
-dis = (a * P0(1) + b * P0(2) + c) / dsqrt(a ** 2 + b ** 2)
+aa = (P1_line1(1) * P2_line1(2)) - (P1_line1(2) * P2_line1(1))
+bb = (P1_line2(1) * P2_line2(2)) - (P1_line2(2) * P2_line2(1))
+cc = P1_line2(1) - P2_line2(1)
+dd = P1_line1(1) - P2_line1(1)
+ee = P1_line2(2) - P2_line2(2)
+ff = P1_line1(2) - P2_line1(2)
+denom = (dd * ee) - (ff * cc)
+if ((denom>1.d-9).or.(denom<-1.d-9)) then
+   test = .true.
+   Pint(1) = ((aa * cc) - (dd * bb)) / denom
+   Pint(2) = ((aa * ee) - (ff * bb)) / denom
+endif
 !------------------------
 ! Deallocations
 !------------------------
 return
-end subroutine distance_point_line_2D
+end subroutine line_line_intersection_2D
 
