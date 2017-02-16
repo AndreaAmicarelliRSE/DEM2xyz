@@ -36,6 +36,8 @@
 !              Reservoir/bathymetry regions cannot overlap each other.
 !              In case a digging region overlaps a reservoir region, the latter 
 !              holds the priority.
+!              In the presence of a volume correction, two reference shapes are 
+!                 available: "reservoir" and "volcanic lake".
 !              Variables:
 !              input variables (ref. template of the main input file)
 !              coastline(n_bathymetries,n_rows,n_col_out): logical flag to 
@@ -69,7 +71,7 @@
 !                 reservoir volumes
 !              weight(n_bathymetries,n_row,n_col_out): point weights for 
 !                 reservoir volume corrections
-!              weight_sum(n_bathymetries): weight sums
+!              weight_sum(n_bathymetries): weight sums 
 !              x_in,y_in: horizontal coordinates in input -(m) or (°)- 
 !              x_out,y_out: horizontal coordinates in output (m)
 !              z_Pint: hieght of the point Pint (m)
@@ -94,6 +96,7 @@ double precision :: point(2),point2(2),point_plus_normal(2),normal(2),normal2(2)
 double precision :: point_coast(2),Pint(2)
 logical,dimension(:),allocatable :: volume_flag
 integer,dimension(:),allocatable :: n_digging_vertices,n_vertices_around_res
+integer,dimension(:),allocatable :: weight_type(:)
 double precision,dimension(:),allocatable :: z_digging_regions,z_FS,z_eps
 double precision,dimension(:),allocatable :: z_downstream,volume_res_est
 double precision,dimension(:),allocatable :: volume_res_inp,weight_sum
@@ -224,6 +227,7 @@ if (n_bathymetries>0) then
    allocate(volume_res_corr(n_bathymetries))
    allocate(weight_sum(n_bathymetries))
    allocate(dis_down_up(n_bathymetries))
+   allocate(weight_type(n_bathymetries))
    allocate(pos_res_downstream(n_bathymetries,2))
    allocate(pos_res_upstream(n_bathymetries,2))
    allocate(vertices_around_res(n_bathymetries,6,2))
@@ -237,6 +241,7 @@ if (n_bathymetries>0) then
    volume_res_corr(:) = 0.d0
    weight_sum(:) = 0.d0
    dis_down_up(:) = 0.d0
+   weight_type(:) = 0
    pos_res_downstream(:,:) = 0.d0
    pos_res_upstream(:,:) = 0.d0
    vertices_around_res(:,:,:) = 0.d0
@@ -244,7 +249,7 @@ if (n_bathymetries>0) then
       read(12,*) pos_res_downstream(i_bath,1),pos_res_downstream(i_bath,2),    &
          z_downstream(i_bath),pos_res_upstream(i_bath,1),                      &
          pos_res_upstream(i_bath,2),z_FS(i_bath),z_eps(i_bath),                &
-         volume_flag(i_bath),n_vertices_around_res(i_bath)
+         volume_flag(i_bath),weight_type(i_bath),n_vertices_around_res(i_bath)
       do j_aux=1,n_vertices_around_res(i_bath)
          read(12,*) vertices_around_res(i_bath,j_aux,1),                       &
             vertices_around_res(i_bath,j_aux,2)
@@ -326,6 +331,7 @@ do j_out=1,n_col_out,res_fact
 ! No interpolation (dx=dy)
             mat_z_out(i_out,j_out) = mat_z_in(i_out,j_out)
       endif
+
 ! Reservoir detection
       do i_bath=1,n_bathymetries
          test_integer = 0
@@ -523,25 +529,37 @@ if (n_bathymetries>0) then
                if (volume_flag(i_bath).eqv..true.) then
 ! Volume correction is active
 ! To compute the weight for the volume correction
-                  aux_scalar_3 = dabs(dis_Pdown_Pint / dis_down_up(i_bath))
-                  if (aux_scalar_3<=0.5d0) then
-                     aux_scalar = 0.d0
-                     aux_scalar_2 = 1.d0
-                     else
-                        aux_scalar = 1.d0
-                        aux_scalar_2 = -1.d0
+                  if (weight_type(i_bath)==1) then
+                     weight(i_bath,i_out,j_out) = max((mat_z_out(i_out,j_out)  &
+                                                  - z_downstream(i_bath)),0.d0)
+                     elseif (weight_type(i_bath)==2) then
+                        aux_scalar_3 = dabs(dis_Pdown_Pint /                   &
+                                       dis_down_up(i_bath))
+                        if (aux_scalar_3<=0.5d0) then
+                           aux_scalar = 0.d0
+                           aux_scalar_2 = 1.d0
+                           else
+                              aux_scalar = 1.d0
+                              aux_scalar_2 = -1.d0
+                        endif
+                        weight(i_bath,i_out,j_out) = 2.d0 * (aux_scalar +      &
+                                                     aux_scalar_2 *            &
+                                                     aux_scalar_3) * (1.d0 -   &
+                                                     min(dabs(dis /            &
+                                                     dis_Pint_Pcoast),1.d0))
+                        write(*,*) "weight(i_bath,i_out,j_out): ",             &
+                           weight(i_bath,i_out,j_out)
+                        write(*,*) "aux_scalar: ",aux_scalar
+                        write(*,*) "aux_scalar_2",aux_scalar_2
+                        write(*,*) "aux_scalar_3",aux_scalar_3
+                        write(*,*) "dis",dis
+                        write(*,*) "dis_Pint_Pcoast",dis_Pint_Pcoast
+                        else
+                           write(*,*) "A reservoir volume correction is ",     &
+                              "requested, but no admissible weight type is ",  &
+                              "selected. The program stops here. "
+                           stop 
                   endif
-                  weight(i_bath,i_out,j_out) = 2.d0 * (aux_scalar +            &
-                                               aux_scalar_2 * aux_scalar_3) *  &
-                                               (1.d0 - min(dabs(dis /          &
-                                               dis_Pint_Pcoast),1.d0))
-                  write(*,*) "weight(i_bath,i_out,j_out): ",                   &
-                     weight(i_bath,i_out,j_out)
-                  write(*,*) "aux_scalar: ",aux_scalar
-                  write(*,*) "aux_scalar_2",aux_scalar_2
-                  write(*,*) "aux_scalar_3",aux_scalar_3
-                  write(*,*) "dis",dis
-                  write(*,*) "dis_Pint_Pcoast",dis_Pint_Pcoast
 ! To update the weight sum
                   weight_sum(i_bath) = weight_sum(i_bath) +                    &
                                        weight(i_bath,i_out,j_out)
@@ -651,6 +669,7 @@ if (n_bathymetries>0) then
    deallocate(coastline)
    deallocate(volume_flag)
    deallocate(weight)
+   deallocate(weight_type)
 endif
 write(*,*) "DEM2xyz has terminated. "
 end program DEM2xyz

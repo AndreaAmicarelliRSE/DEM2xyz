@@ -36,13 +36,13 @@ digging_vertices(n_digging_regions,n_digging_vertices(n_digging_regions),1) digg
    !    i-th digging/filling region (3-6).
    ! digging_vertices(i,j,k): output k-th coordinate (X or Y in -m-) of the 
    !    j-th vertex of the i-th digging/filling region.
-pos_res_downstream(1,1) pos_res_downstream(1,2) z_downstream(1) pos_res_upstream(1,1) pos_res_upstream(1,2) z_FS(1) z_eps(1) volume_flag(1) n_vertices_around_res(1)
+pos_res_downstream(1,1) pos_res_downstream(1,2) z_downstream(1) pos_res_upstream(1,1) pos_res_upstream(1,2) z_FS(1) z_eps(1) volume_flag(1) weight_type(1) n_vertices_around_res(1)
 vertices_around_res(1,1,1) vertices_around_res(1,1,2)
 ...
 vertices_around_res(1,n_vertices_around_res(1),1) vertices_around_res(1,n_vertices_around_res(1),2)
 reservoir_volume_est(1) ! if (volume_flag(1).eqv..true.)
 ...
-pos_res_downstream(n_bathymetries,1) pos_res_downstream(n_bathymetries,2) z_downstream(n_bathymetries) pos_res_upstream(n_bathymetries,1) pos_res_upstream(n_bathymetries,2) z_FS(n_bathymetries) z_eps(n_bathymetries) volume_flag(n_bathymetries) n_vertices_around_res(n_bathymetries)
+pos_res_downstream(n_bathymetries,1) pos_res_downstream(n_bathymetries,2) z_downstream(n_bathymetries) pos_res_upstream(n_bathymetries,1) pos_res_upstream(n_bathymetries,2) z_FS(n_bathymetries) z_eps(n_bathymetries) volume_flag(n_bathymetries) weight_type(n_bathymetries) n_vertices_around_res(n_bathymetries)
 vertices_around_res(n_bathymetries,1,1) vertices_around_res(n_bathymetries,1,2)
 ...
 vertices_around_res(n_bathymetries,n_vertices_around_res(n_bathymetries),1) vertices_around_res(n_bathymetries,n_vertices_around_res(n_bathymetries),2)
@@ -57,6 +57,8 @@ reservoir_volume_est(n_bathymetries) ! if (volume_flag(n_bathymetries).eqv..true
    ! z_eps(i): accuracy/tolerance on z_downstream(i) and z_FS(i).
    ! volume_flag(i): logical flag to provide (or not) the volume reservoir as 
    !    an input parameter (for the i-th bathymetry/reservoir)
+   ! weight_type(i): type of weight for the bathymetry correction (1: reservoir 
+   !    shape, 2: volcanic lake shape)
    ! n_vertices_around_res(i): number of vertices pf the positioning polygon 
    !    circumscribing the horizontal projection of the i-th 
    !    reservoir/bathymetry.
