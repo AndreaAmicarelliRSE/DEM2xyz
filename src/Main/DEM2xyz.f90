@@ -37,7 +37,7 @@
 !              In case a digging region overlaps a reservoir region, the latter 
 !              holds the priority.
 !              In the presence of a volume correction, two reference shapes are 
-!                 available: "reservoir" and "volcanic lake".
+!              available: "reservoir" and "volcanic lake".
 !              Variables:
 !              input variables (ref. template of the main input file)
 !              coastline(n_bathymetries,n_rows,n_col_out): logical flag to 
@@ -88,6 +88,7 @@ logical :: test_logical
 integer :: i_in,j_in,i_out,j_out,n_col_in,n_col_out,n_row,res_fact,n_points_in
 integer :: n_points_out,i_aux,j_aux,n_digging_regions,i_reg,test_integer
 integer :: i_bath,aux_integer,i_close,j_close,j2_out,i2_out,n_bathymetries
+integer :: alloc_stat
 double precision :: dx,dy,abs_mean_latitude,denom,distance,x_in,x_out,y_in,y_out
 double precision :: dis,dis2,min_dis2,z_Pint,dis_Pint_Pcoast,aux_scalar
 double precision :: dis_Pdown_Pint,aux_scalar_2,aux_scalar_3
@@ -193,7 +194,16 @@ read(11,'(a14,i15)') char_aux,n_row
 read(11,'(a)')
 read(11,'(a)')
 read(11,'(a14,f15.7)') char_aux,dy
-allocate(mat_z_in(n_row,n_col_in))
+if (.not.allocated(mat_z_in)) then
+   allocate(mat_z_in(n_row,n_col_in),STAT=alloc_stat)
+   if (alloc_stat/=0) then
+      write(0,*) 'Allocation of "mat_z_in" failed; the execution terminates ', &
+         'here.'
+      stop
+      else
+         write(*,*) 'Allocation of "mat_z_in" is successfully completed.'
+   endif
+endif
 mat_z_in = 0.d0
 read(11,'(a)')
 do i_in=1,n_row
@@ -203,9 +213,39 @@ close(11)
 open(12,file='DEM2xyz.inp')
 read(12,*) res_fact,abs_mean_latitude,n_digging_regions,n_bathymetries
 if (n_digging_regions>0) then
-   allocate(n_digging_vertices(n_digging_regions))
-   allocate(z_digging_regions(n_digging_regions))
-   allocate(digging_vertices(n_digging_regions,6,2))
+   if (.not.allocated(n_digging_vertices)) then
+      allocate(n_digging_vertices(n_digging_regions),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "n_digging_vertices" failed; the execution',&
+            ' terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "n_digging_vertices" is successfully ',  &
+               'completed.'
+      endif
+   endif
+   if (.not.allocated(z_digging_regions)) then
+      allocate(z_digging_regions(n_digging_regions),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "z_digging_regions" failed; the execution', &
+            ' terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "z_digging_regions" is successfully ',   &
+               'completed.'
+      endif
+   endif
+   if (.not.allocated(digging_vertices)) then
+      allocate(digging_vertices(n_digging_regions,6,2),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "digging_vertices" failed; the execution',  &
+            ' terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "digging_vertices" is successfully ',    &
+               'completed.'
+      endif
+   endif
    n_digging_vertices(:) = 0
    z_digging_regions(:) = 0.d0
    digging_vertices(:,:,:) = 0.d0
@@ -217,20 +257,154 @@ if (n_digging_regions>0) then
    enddo
 endif
 if (n_bathymetries>0) then
-   allocate(volume_flag(n_bathymetries))
-   allocate(n_vertices_around_res(n_bathymetries))
-   allocate(z_downstream(n_bathymetries))
-   allocate(z_FS(n_bathymetries))
-   allocate(z_eps(n_bathymetries))
-   allocate(volume_res_est(n_bathymetries))
-   allocate(volume_res_inp(n_bathymetries))
-   allocate(volume_res_corr(n_bathymetries))
-   allocate(weight_sum(n_bathymetries))
-   allocate(dis_down_up(n_bathymetries))
-   allocate(weight_type(n_bathymetries))
-   allocate(pos_res_downstream(n_bathymetries,2))
-   allocate(pos_res_upstream(n_bathymetries,2))
-   allocate(vertices_around_res(n_bathymetries,6,2))
+   if (.not.allocated(volume_flag)) then
+      allocate(volume_flag(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "volume_flag" failed; the execution',       &
+            ' terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "volume_flag" is successfully ',         &
+               'completed.'
+      endif
+   endif
+   if (.not.allocated(n_vertices_around_res)) then
+      allocate(n_vertices_around_res(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "n_vertices_around_res" failed; the ',      &
+            'execution terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "n_vertices_around_res" is ',            &
+               'successfully completed.'
+      endif
+   endif
+   if (.not.allocated(z_downstream)) then
+      allocate(z_downstream(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "z_downstream" failed; the execution ',     &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "z_downstream" is successfully completed.'
+      endif
+   endif
+   if (.not.allocated(z_FS)) then
+      allocate(z_FS(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "z_FS" failed; the execution terminates ',  &
+            'here.'
+         stop
+         else
+            write(*,*) 'Allocation of "z_FS" is successfully completed.'
+      endif
+   endif
+   if (.not.allocated(z_eps)) then
+      allocate(z_eps(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "z_eps" failed; the execution terminates ', &
+            'here.'
+         stop
+         else
+            write(*,*) 'Allocation of "z_eps" is successfully completed.'
+      endif
+   endif
+   if (.not.allocated(volume_res_est)) then
+      allocate(volume_res_est(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "volume_res_est" failed; the execution ',   &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "volume_res_est" is successfully ',      &
+               'completed.'
+      endif
+   endif
+   if (.not.allocated(volume_res_inp)) then
+      allocate(volume_res_inp(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "volume_res_inp" failed; the execution ',   &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "volume_res_inp" is successfully ',      &
+               'completed.'
+      endif
+   endif
+   if (.not.allocated(volume_res_corr)) then
+      allocate(volume_res_corr(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "volume_res_corr" failed; the execution ',  &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "volume_res_corr" is successfully ',     &
+               'completed.'
+      endif
+   endif
+   if (.not.allocated(weight_sum)) then
+      allocate(weight_sum(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "weight_sum" failed; the execution ',       &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "weight_sum" is successfully completed.'
+      endif
+   endif
+   if (.not.allocated(dis_down_up)) then
+      allocate(dis_down_up(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "dis_down_up" failed; the execution ',      &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "dis_down_up" is successfully completed.'
+      endif
+   endif
+   if (.not.allocated(weight_type)) then
+      allocate(weight_type(n_bathymetries),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "weight_type" failed; the execution ',      &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "weight_type" is successfully completed.'
+      endif
+   endif
+   if (.not.allocated(pos_res_downstream)) then
+      allocate(pos_res_downstream(n_bathymetries,2),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "pos_res_downstream" failed; the ',         &
+            'execution terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "pos_res_downstream" is successfully ',  &
+               'completed.'
+      endif
+   endif
+   if (.not.allocated(pos_res_upstream)) then
+      allocate(pos_res_upstream(n_bathymetries,2),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "pos_res_upstream" failed; the ',           &
+            'execution terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "pos_res_upstream" is successfully ',    &
+               'completed.'
+      endif
+   endif
+   if (.not.allocated(vertices_around_res)) then
+      allocate(vertices_around_res(n_bathymetries,6,2),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "vertices_around_res" failed; the ',        &
+            'execution terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "vertices_around_res" is successfully ', &
+               'completed.'
+      endif
+   endif
    volume_flag(:) = .false.
    n_vertices_around_res(:) = 0
    z_downstream(:) = 0.d0
@@ -283,14 +457,50 @@ abs_mean_latitude = abs_mean_latitude / 180.d0 * 3.1415926
       dx = dy
       n_col_out = n_col_in
 endif
-allocate(mat_z_out(n_row,n_col_out))
+if (.not.allocated(mat_z_out)) then
+   allocate(mat_z_out(n_row,n_col_out),STAT=alloc_stat)
+   if (alloc_stat/=0) then
+      write(0,*) 'Allocation of "mat_z_out" failed; the execution terminates ',&
+         'here.'
+      stop
+      else
+         write(*,*) 'Allocation of "mat_z_out" is successfully completed.'
+   endif
+endif
 mat_z_out = 0.d0
 if (n_bathymetries>0) then
-   allocate(reservoir(n_bathymetries,n_row,n_col_out))
+   if (.not.allocated(reservoir)) then
+      allocate(reservoir(n_bathymetries,n_row,n_col_out),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "reservoir" failed; the execution ',        &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "reservoir" is successfully completed.'
+      endif
+   endif
    reservoir(:,:,:) = .false.
-   allocate(coastline(n_bathymetries,n_row,n_col_out))
+   if (.not.allocated(coastline)) then
+      allocate(coastline(n_bathymetries,n_row,n_col_out),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "coastline" failed; the execution ',        &
+            'terminates here.'
+         stop
+         else
+            write(*,*) 'Allocation of "coastline" is successfully completed.'
+      endif
+   endif
    coastline(:,:,:) = .false.
-   allocate(weight(n_bathymetries,n_row,n_col_out))
+   if (.not.allocated(weight)) then
+      allocate(weight(n_bathymetries,n_row,n_col_out),STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Allocation of "weight" failed; the execution terminates ',&
+            'here.'
+         stop
+         else
+            write(*,*) 'Allocation of "weight" is successfully completed.'
+      endif
+   endif
    weight(:,:,:) = 0.d0
 endif
 write(*,*) "Eventual grid interpolation, eventual digging/filling DEM ",       &
@@ -645,31 +855,251 @@ endif
 !------------------------
 ! Deallocations
 !------------------------
-deallocate(mat_z_in)
-deallocate(mat_z_out)
+if(allocated(mat_z_in)) then
+   deallocate(mat_z_in,STAT=alloc_stat)
+   if (alloc_stat/=0) then
+      write(0,*) 'Deallocation of "mat_z_in" failed; the execution terminates',&
+         ' here. '
+      stop
+      else
+         write(*,'(1x,a)') 'Deallocation of "mat_z_in" is successfully ',      &
+            'completed. '
+   endif
+endif
+if(allocated(mat_z_out)) then
+   deallocate(mat_z_out,STAT=alloc_stat)
+   if (alloc_stat/=0) then
+      write(0,*) 'Deallocation of "mat_z_out" failed; the execution ',         &
+         'terminates here. '
+      stop
+      else
+         write(*,'(1x,a)') 'Deallocation of "mat_z_out" is successfully ',     &
+            'completed. '
+   endif
+endif
 if (n_digging_regions>0) then
-   deallocate(n_digging_vertices)
-   deallocate(z_digging_regions)
-   deallocate(digging_vertices)
+   if(allocated(n_digging_vertices)) then
+      deallocate(n_digging_vertices,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "n_digging_vertices" failed; the ',       &
+            'execution terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "n_digging_vertices" is ',      &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(z_digging_regions)) then
+      deallocate(z_digging_regions,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "z_digging_regions" failed; the ',        &
+            'execution terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "z_digging_regions" is ',       &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(digging_vertices)) then
+      deallocate(digging_vertices,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "digging_vertices" failed; the ',         &
+            'execution terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "digging_vertices" is ',        &
+               'successfully completed. '
+      endif
+   endif
 endif
 if (n_bathymetries>0) then
-   deallocate(n_vertices_around_res)
-   deallocate(z_downstream)
-   deallocate(z_FS)
-   deallocate(z_eps)
-   deallocate(volume_res_est)
-   deallocate(volume_res_inp)
-   deallocate(volume_res_corr)
-   deallocate(weight_sum)
-   deallocate(dis_down_up)
-   deallocate(pos_res_downstream)
-   deallocate(pos_res_upstream)
-   deallocate(vertices_around_res)
-   deallocate(reservoir)
-   deallocate(coastline)
-   deallocate(volume_flag)
-   deallocate(weight)
-   deallocate(weight_type)
+   if(allocated(n_vertices_around_res)) then
+      deallocate(n_vertices_around_res,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "n_vertices_around_res" failed; the ',    &
+            'execution terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "n_vertices_around_res" is ',   &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(z_downstream)) then
+      deallocate(z_downstream,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "z_downstream" failed; the execution ',   &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "z_downstream" is ',            &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(z_FS)) then
+      deallocate(z_FS,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "z_FS" failed; the execution terminates ',&
+            'here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "z_FS" is successfully ',       &
+               'completed. '
+      endif
+   endif
+   if(allocated(z_eps)) then
+      deallocate(z_eps,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "z_eps" failed; the execution terminates',&
+            ' here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "z_eps" is successfully ',      &
+               'completed. '
+      endif
+   endif
+   if(allocated(volume_res_est)) then
+      deallocate(volume_res_est,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "volume_res_est" failed; the execution ', &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "volume_res_est" is ',          &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(volume_res_inp)) then
+      deallocate(volume_res_inp,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "volume_res_inp" failed; the execution ', &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "volume_res_inp" is ',          &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(volume_res_corr)) then
+      deallocate(volume_res_corr,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "volume_res_corr" failed; the execution ',&
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "volume_res_corr" is ',         &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(weight_sum)) then
+      deallocate(weight_sum,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "weight_sum" failed; the execution ',     &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "weight_sum" is successfully ', &
+               'completed. '
+      endif
+   endif
+   if(allocated(dis_down_up)) then
+      deallocate(dis_down_up,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "dis_down_up" failed; the execution ',    &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "dis_down_up" is successfully ',&
+               'completed. '
+      endif
+   endif
+   if(allocated(pos_res_downstream)) then
+      deallocate(pos_res_downstream,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "pos_res_downstream" failed; the ',       &
+            'execution terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "pos_res_downstream" is ',      &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(pos_res_upstream)) then
+      deallocate(pos_res_upstream,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "pos_res_upstream" failed; the execution',&
+            ' terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "pos_res_upstream" is ',        &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(vertices_around_res)) then
+      deallocate(vertices_around_res,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "vertices_around_res" failed; the ',      &
+            'execution terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "vertices_around_res" is ',     &
+               'successfully completed. '
+      endif
+   endif
+   if(allocated(reservoir)) then
+      deallocate(reservoir,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "reservoir" failed; the execution ',      &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "reservoir" is successfully ',  &
+               'completed. '
+      endif
+   endif
+   if(allocated(coastline)) then
+      deallocate(coastline,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "coastline" failed; the execution ',      &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "coastline" is successfully ',  &
+               'completed. '
+      endif
+   endif
+   if(allocated(volume_flag)) then
+      deallocate(volume_flag,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "volume_flag" failed; the execution ',    &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "volume_flag" is successfully ',&
+               'completed. '
+      endif
+   endif
+   if(allocated(weight)) then
+      deallocate(weight,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "weight" failed; the execution ',         &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "weight" is successfully ',     &
+               'completed. '
+      endif
+   endif
+   if(allocated(weight_type)) then
+      deallocate(weight_type,STAT=alloc_stat)
+      if (alloc_stat/=0) then
+         write(0,*) 'Deallocation of "weight_type" failed; the execution ',    &
+            'terminates here. '
+         stop
+         else
+            write(*,'(1x,a)') 'Deallocation of "weight_type" is successfully ',&
+               'completed. '
+      endif
+   endif
 endif
 write(*,*) "DEM2xyz has terminated. "
 end program DEM2xyz
