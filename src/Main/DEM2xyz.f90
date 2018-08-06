@@ -1,10 +1,10 @@
 !-------------------------------------------------------------------------------
-! "DEM2xyz v.1.0" (DEM manager tool)
+! "DEM2xyz v.2.0" (DEM manager tool)
 ! Copyright 2016-2017 (RSE SpA)
-! "DEM2xyz v.1.0" authors and email contact are provided on the documentation 
+! "DEM2xyz v.2.0" authors and email contact are provided on the documentation 
 ! file.
-! This file is part of DEM2xyz v.1.0 .
-! DEM2xyz v.1.0 is free software: you can redistribute it and/or modify
+! This file is part of DEM2xyz v.2.0 .
+! DEM2xyz v.2.0 is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
 ! the Free Software Foundation, either version 3 of the License, or
 ! (at your option) any later version.
@@ -16,7 +16,7 @@
 ! along with DEM2xyz. If not, see <http://www.gnu.org/licenses/>.
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-! Description. “DEM2xyz v.1.0” (RSE SpA) reads a “DEM” file and writes the 
+! Description. “DEM2xyz v.2.0” (RSE SpA) reads a “DEM” file and writes the 
 !              associated DEM in a corresponding “xyz” file, possibly 
 !              changing the spatial resolution (as requested by the user). 
 !              In case the absolute value of the mean latitude is provided with
@@ -38,6 +38,7 @@
 !              holds the priority.
 !              In the presence of a volume correction, two reference shapes are 
 !              available: "reservoir" and "volcanic lake".
+!              DEM2xyz v.2.0 is compatible with SPHERA v.9.0.0 (RSE SpA).
 !              Variables:
 !              input variables (ref. template of the main input file)
 !              coastline(n_bathymetries,n_rows,n_col_out): logical flag to 
@@ -186,7 +187,7 @@ n_bathymetries = 0
 !------------------------
 ! Statements
 !------------------------
-write(*,*) "DEM2xyz v.1.0 (RSE SpA) is running. DEM2xyz is a DEM manager tool. "
+write(*,*) "DEM2xyz v.2.0 (RSE SpA) is running. DEM2xyz is a DEM manager tool. "
 write(*,*) "Reading DEM file, DEM2xyz main input file and pre-processing. "
 open(11,file='DEM.dem')
 read(11,'(a14,i15)') char_aux,n_col_in
