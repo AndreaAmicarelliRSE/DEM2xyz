@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! "DEM2xyz v.2.0" (DEM manager tool)
-! Copyright 2016-2017 (RSE SpA)
+! Copyright 2016-2018 (RSE SpA)
 ! "DEM2xyz v.2.0" authors and email contact are provided on the documentation 
 ! file.
 ! This file is part of DEM2xyz v.2.0 .

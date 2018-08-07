@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! "DEM2xyz v.2.0" (DEM manager tool)
-! Copyright 2016-2017 (RSE SpA)
+! Copyright 2016-2018 (RSE SpA)
 ! "DEM2xyz v.2.0" authors and email contact are provided on the documentation 
 ! file.
 ! This file is part of DEM2xyz v.2.0 .
@@ -508,7 +508,7 @@ write(*,*) "Eventual grid interpolation, eventual digging/filling DEM ",       &
    "regions, eventual reservoir detection and writing xyz file (version ",     &
    "before the eventual reservoir/batymetry extrusions). "
 open(13,file="xyz_no_extrusion.txt")
-write(13,'(a)') '        x(m)       y(m)        z(m)        z   '
+write(13,'(a)') '           x(m)          y(m)           z(m)           z   '
 n_points_in = n_row * n_col_in / res_fact / res_fact
 n_points_out = n_row * n_col_out / res_fact / res_fact
 write(*,'(a,i15)') 'Number of vertices in the input "DEM" file: ',n_points_in
@@ -614,7 +614,7 @@ do j_out=1,n_col_out,res_fact
             mat_z_out(i_out,j_out) = z_digging_regions(i_reg)
          endif
       enddo
-      write(13,'(4(F12.4))') x_out,y_out,mat_z_out(i_out,j_out),               &
+      write(13,'(4(F15.4))') x_out,y_out,mat_z_out(i_out,j_out),               &
          mat_z_out(i_out,j_out)
    enddo
 enddo
@@ -831,23 +831,23 @@ if (n_bathymetries>0) then
    write(*,*) "Eventual writing of the xyz file (version after the ",          &
       "reservoir/batymetry extrusions). "
    open(14,file="xyz_with_extrusions.txt")
-   write(14,'(a)') '        x(m)       y(m)        z(m)        z   '
+   write(14,'(a)') '           x(m)          y(m)           z(m)           z   '
    do j_out=1,n_col_out,res_fact
       do i_out=1,n_row,res_fact
          x_out = (j_out - 1) * dy + dy / 2.d0
          y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
-         write(14,'(4(F12.4))') x_out,y_out,mat_z_out(i_out,j_out),            &
+         write(14,'(4(F15.4))') x_out,y_out,mat_z_out(i_out,j_out),            &
             mat_z_out(i_out,j_out)
       enddo
    enddo
    close(14)
    open(15,file="weight_bathymetry_1.txt")
-   write(15,'(a)') '        x(m)       y(m)        z(m)        z   '
+   write(15,'(a)') '           x(m)          y(m)           z(m)           z   '
    do j_out=1,n_col_out,res_fact
       do i_out=1,n_row,res_fact
          x_out = (j_out - 1) * dy + dy / 2.d0
          y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
-         write(15,'(4(F12.4))') x_out,y_out,weight(1,i_out,j_out),             &
+         write(15,'(4(F15.4))') x_out,y_out,weight(1,i_out,j_out),             &
             weight(1,i_out,j_out)
       enddo
    enddo
