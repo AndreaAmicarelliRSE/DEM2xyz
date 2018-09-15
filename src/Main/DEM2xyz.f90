@@ -542,7 +542,6 @@ do j_out=1,n_col_out,res_fact
 ! No interpolation (dx=dy)
             mat_z_out(i_out,j_out) = mat_z_in(i_out,j_out)
       endif
-
 ! Reservoir detection
       do i_bath=1,n_bathymetries
          test_integer = 0
@@ -652,7 +651,7 @@ if (n_bathymetries>0) then
       do i_out=1,n_row,res_fact
          do_extrusion: do i_bath=1,n_bathymetries
             if (reservoir(i_bath,i_out,j_out).eqv..true.) then
-! To treat inner reservoir points
+! To treat the inner reservoir points
                if (coastline(i_bath,i_out,j_out).eqv..true.) then
                   exit do_extrusion
                endif
