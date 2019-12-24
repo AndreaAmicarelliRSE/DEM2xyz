@@ -16,55 +16,127 @@
 ! You should have received a copy of the GNU General Public License
 ! along with DEM2xyz. If not, see <http://www.gnu.org/licenses/>.
 !-------------------------------------------------------------------------------
-res_fact abs_mean_latitude n_digging_regions n_bathymetries
-   ! res_fact: resolution factor (ratio between the output and the input  
-   !    spatial resolution).
-   ! abs_mean_latitude: absolute value of the latitude of the DEM barycentre.
-   !    Provide a negative value in case of cartographic coordinates (X,Y).
-   ! n_digging_regions: number of digging/filling regions.
-   ! n_bathymetries: number of bathymetries which are computed.
-z_digging_regions(1) n_digging_vertices(1)
-digging_vertices(1,1,1) digging_vertices(1,1,2)
+! This template file can be filled in to complete the input file "*.inp" for 
+!   any test case. The comment lines have to be removed before the execution.
+! Legend:
+!    !    beginning of a comment line
+!    ![?] beginning of a definition/guideline
+!    <>   the content within these brackets represents an input variable
+!    ![*] beginning of the structure of a line with the names of the input 
+!         variables
+!    ...  possible repetitions of the above/previous data
+!    !<<< beginning of a section to be filled with input data
+!    ___  space to be replaced with an input value
+!    !>>> end of a section to be filled with input data
+!    =    start of a variable value
+!-------------------------------------------------------------------------------
+![?] <res_fact>: resolution factor (ratio between the output and the input 
+!    spatial resolution)
+![?] <abs_mean_latitude>: absolute value of the latitude of the DEM barycentre.
+!    Provide a negative value in case of cartographic coordinates (X,Y).
+![?] <n_digging_regions>: number of digging/filling regions
+![?] <n_bathymetries>: number of bathymetries which are computed
+!-------------------------------------------------------------------------------
+![*] <res_fact> <abs_mean_latitude> <n_digging_regions> <n_bathymetries>
+!-------------------------------------------------------------------------------
+!<<<****************************************************************************
+___ ___ ___ ___
+!>>>****************************************************************************
+!-------------------------------------------------------------------------------
+![?] <z_digging_regions(i)>: height of the i-th digging/filling region
+![?] <n_digging_vertices(i)>: number of vertices of the polygon representing the 
+!    i-th digging/filling region (3-6)
+![?] <digging_vertices(i,j,k)>: output k-th coordinate (X or Y in -m-) of the 
+!    j-th vertex of the i-th digging/filling region
+!-------------------------------------------------------------------------------
+![*] <z_digging_regions(1)> <n_digging_vertices(1)>
+![*] <digging_vertices(1,1,1)> <digging_vertices(1,1,2)>
+![*] ...
+![*] <digging_vertices(1,n_digging_vertices(1),1)> 
+!    <digging_vertices(1,n_digging_vertices(1),2)>
+![*] ...
+![*] <z_digging_regions(n_digging_regions)> 
+!    <n_digging_vertices(n_digging_regions)>
+![*] <digging_vertices(n_digging_regions,1,1)> 
+!    <digging_vertices(n_digging_regions,1,2)>
+![*] ...
+![*] <digging_vertices(n_digging_regions,n_digging_vertices(n_digging_reg.),1)>
+!    <digging_vertices(n_digging_regions,n_digging_vertices(n_digging_reg.),2)>
+!-------------------------------------------------------------------------------
+!<<<****************************************************************************
+___ ___
+___ ___
 ...
-digging_vertices(1,n_digging_vertices(1),1) digging_vertices(1,n_digging_vertices(1),2)
+___ ___
 ...
-z_digging_regions(n_digging_regions) n_digging_vertices(n_digging_regions)
-digging_vertices(n_digging_regions,1,1) digging_vertices(n_digging_regions,1,2)
+___ ___
+___ ___
 ...
-digging_vertices(n_digging_regions,n_digging_vertices(n_digging_regions),1) digging_vertices(n_digging_regions,n_digging_vertices(n_digging_regions),2)
-   ! z_digging_regions(i): height of the i-th digging/filling region.
-   ! n_digging_vertices(i): number of vertices of the polygon representing the  
-   !    i-th digging/filling region (3-6).
-   ! digging_vertices(i,j,k): output k-th coordinate (X or Y in -m-) of the 
-   !    j-th vertex of the i-th digging/filling region.
-pos_res_downstream(1,1) pos_res_downstream(1,2) z_downstream(1) pos_res_upstream(1,1) pos_res_upstream(1,2) z_FS(1) z_eps(1) volume_flag(1) weight_type(1) n_vertices_around_res(1)
-vertices_around_res(1,1,1) vertices_around_res(1,1,2)
+___ ___
+!>>>****************************************************************************
+!-------------------------------------------------------------------------------
+![?] <pos_res_downstream(i,j)>: j-th coordinate (X or Y in -m-) of the most 
+!    downstream point of the i-th bathymetry/reservoir.
+![?] <z_downstream(i)>: height of the most downstream point of the reservoir for 
+!    the i-th bathymetry
+![?] <pos_res_upstream(i,j)>: j-th coordinate (X or Y in -m-) of the most 
+!    upstream point of the i-th bathymetry/reservoir
+![?] <z_FS(i)>: free surface height for the reservoir of the i-th bathymetry
+![?] <z_eps(i)>: accuracy/tolerance on z_downstream(i) and z_FS(i)
+![?] <volume_flag(i)>: logical flag to provide (or not) the volume reservoir as 
+!    an input parameter (for the i-th bathymetry/reservoir)
+![?] <weight_type(i)>: type of weight for the bathymetry correction (1: 
+!    reservoir shape, 2: volcanic lake shape)
+![?] <n_vertices_around_res(i)>: number of vertices pf the positioning polygon 
+!    circumscribing the horizontal projection of the i-th reservoir / 
+!    bathymetry
+![?] <vertices_around_res(i,j,k)>: k-th coordinate (X or Y in -m-) of the j-th 
+!    vertex of the positioning polygon for the i-th bathymetry/reservoir
+![?] <reservoir_volume_est(i)>: volume reservoir (for the i-th bathymetry / 
+!    reservoir)
+!-------------------------------------------------------------------------------
+![*] <pos_res_downstream(1,1)> <pos_res_downstream(1,2)> <z_downstream(1)> 
+!    <pos_res_upstream(1,1)> <pos_res_upstream(1,2)> <z_FS(1)> <z_eps(1)> 
+!    <volume_flag(1)> <weight_type(1)> <n_vertices_around_res(1)>
+![*] <vertices_around_res(1,1,1)> <vertices_around_res(1,1,2)>
+![*] ...
+![*] <vertices_around_res(1,n_vertices_around_res(1),1)> 
+!    <vertices_around_res(1,n_vertices_around_res(1),2)>
+!-------------------------------------------------------------------------------
+![?] if (volume_flag(1).eqv..true.) then
+!-------------------------------------------------------------------------------
+![*] <reservoir_volume_est(1)>
+!-------------------------------------------------------------------------------
+![?] endif
+!-------------------------------------------------------------------------------
+![*] ...
+![*] <pos_res_downstream(n_bathymetries,1)> <pos_res_downstream(n_bathymetr.,2)>
+!    <z_downstream(n_bathymetries)> <pos_res_upstream(n_bathymetries,1)> 
+!    <pos_res_upstream(n_bathymetries,2)> <z_FS(n_bathymetries)> 
+!    <z_eps(n_bathymetries)> <volume_flag(n_bathymetries)> 
+!    <weight_type(n_bathymetries)> <n_vertices_around_res(n_bathymetries)>
+![*] <vertices_around_res(n_bathymetries,1,1)> 
+!    <vertices_around_res(n_bathymetries,1,2)>
+![*] ...
+![*] <vertices_around_res(n_bathymetries,n_vertices_around_res(n_bathymetr.),1)>
+!    <vertices_around_res(n_bathymetries,n_vertices_around_res(n_bathymetr.),2)>
+!-------------------------------------------------------------------------------
+![?] if (volume_flag(1).eqv..true.) then
+!-------------------------------------------------------------------------------
+![*] <reservoir_volume_est(n_bathymetries)>
+!-------------------------------------------------------------------------------
+![?] endif
+!-------------------------------------------------------------------------------
+!<<<****************************************************************************
+___ ___ ___ ___ ___ ___ ___ ___ ___ ___
+___ ___
 ...
-vertices_around_res(1,n_vertices_around_res(1),1) vertices_around_res(1,n_vertices_around_res(1),2)
-reservoir_volume_est(1) ! if (volume_flag(1).eqv..true.)
+___ ___
+___
+___ ___ ___ ___ ___ ___ ___ ___ ___ ___
+___ ___
 ...
-pos_res_downstream(n_bathymetries,1) pos_res_downstream(n_bathymetries,2) z_downstream(n_bathymetries) pos_res_upstream(n_bathymetries,1) pos_res_upstream(n_bathymetries,2) z_FS(n_bathymetries) z_eps(n_bathymetries) volume_flag(n_bathymetries) weight_type(n_bathymetries) n_vertices_around_res(n_bathymetries)
-vertices_around_res(n_bathymetries,1,1) vertices_around_res(n_bathymetries,1,2)
-...
-vertices_around_res(n_bathymetries,n_vertices_around_res(n_bathymetries),1) vertices_around_res(n_bathymetries,n_vertices_around_res(n_bathymetries),2)
-reservoir_volume_est(n_bathymetries) ! if (volume_flag(n_bathymetries).eqv..true.)
-   ! pos_res_downstream(i,j): j-th coordinate (X or Y in -m-) of the most 
-   !    downstream point of the i-th bathymetry/reservoir.
-   ! z_downstream(i): height of the most downstream point of the reservoir for 
-   !    the i-th bathymetry
-   ! pos_res_upstream(i,j): j-th coordinate (X or Y in -m-) of the most 
-   !    upstream point of the i-th bathymetry/reservoir.
-   ! z_FS(i): free surface height for the reservoir of the i-th bathymetry
-   ! z_eps(i): accuracy/tolerance on z_downstream(i) and z_FS(i).
-   ! volume_flag(i): logical flag to provide (or not) the volume reservoir as 
-   !    an input parameter (for the i-th bathymetry/reservoir)
-   ! weight_type(i): type of weight for the bathymetry correction (1: reservoir 
-   !    shape, 2: volcanic lake shape)
-   ! n_vertices_around_res(i): number of vertices pf the positioning polygon 
-   !    circumscribing the horizontal projection of the i-th 
-   !    reservoir/bathymetry.
-   ! vertices_around_res(i,j,k): k-th coorindinate (X or Y in -m-) of the 
-   !    j-th vertex of the positioning polygon for the i-th 
-   !    bathymetry/reservoir.
-   ! reservoir_volume_est(i): volume reservoir (for the i-th 
-   !    bathymetry/reservoir)
+___ ___
+___
+!>>>****************************************************************************
+!-------------------------------------------------------------------------------
