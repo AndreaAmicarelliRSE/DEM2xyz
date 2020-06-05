@@ -1,4 +1,3 @@
-! DEM2xyz main input file: template and comments
 !-------------------------------------------------------------------------------
 ! "DEM2xyz v.2.0" (DEM manager tool)
 ! Copyright 2016-2018 (RSE SpA)
@@ -16,8 +15,14 @@
 ! You should have received a copy of the GNU General Public License
 ! along with DEM2xyz. If not, see <http://www.gnu.org/licenses/>.
 !-------------------------------------------------------------------------------
-! This template file can be filled in to complete the input file "*.inp" for 
-!   any test case. The comment lines have to be removed before the execution.
+
+!-------------------------------------------------------------------------------
+! Description: DEM2xyz main input file template. This template file can be 
+!              filled in to complete the input file "*.inp" for any test case. 
+!              The comment lines and blank lines do not disturb the execution.
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
 ! Legend:
 !    !    beginning of a comment line
 !    ![?] beginning of a definition/guideline
@@ -29,6 +34,8 @@
 !    ___  space to be replaced with an input value
 !    !>>> end of a section to be filled with input data
 !    =    start of a variable value
+!-------------------------------------------------------------------------------
+
 !-------------------------------------------------------------------------------
 ![?] <res_fact>: resolution factor (ratio between the output and the input 
 !    spatial resolution)
