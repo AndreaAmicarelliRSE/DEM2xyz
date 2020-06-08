@@ -504,9 +504,9 @@ if (n_bathymetries>0) then
    endif
    weight(:,:,:) = 0.d0
 endif
-write(*,*) "Eventual grid interpolation, eventual digging/filling DEM ",       &
-   "regions, eventual reservoir detection and writing xyz file (version ",     &
-   "before the eventual reservoir/batymetry extrusions). "
+write(*,*) "Possible grid interpolation, possible digging/filling DEM ",       &
+   "regions, possible reservoir detection and writing xyz file (version ",     &
+   "before the possible reservoir/batymetry extrusions). "
 open(13,file="xyz_no_extrusion.txt")
 write(13,'(a)') '           x(m)          y(m)           z(m)           z   '
 n_points_in = n_row * n_col_in / res_fact / res_fact
@@ -827,7 +827,7 @@ if (n_bathymetries>0) then
             volume_res_corr(i_bath),"m**3 . "
       endif
    enddo
-   write(*,*) "Eventual writing of the xyz file (version after the ",          &
+   write(*,*) "Possible writing of the xyz file (version after the ",          &
       "reservoir/batymetry extrusions). "
    open(14,file="xyz_with_extrusions.txt")
    write(14,'(a)') '           x(m)          y(m)           z(m)           z   '

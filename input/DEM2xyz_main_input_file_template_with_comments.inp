@@ -15,13 +15,14 @@
 ! You should have received a copy of the GNU General Public License
 ! along with DEM2xyz. If not, see <http://www.gnu.org/licenses/>.
 !-------------------------------------------------------------------------------
-
+!
 !-------------------------------------------------------------------------------
 ! Description: DEM2xyz main input file template. This template file can be 
 !              filled in to complete the input file "*.inp" for any test case. 
-!              The comment lines and blank lines do not disturb the execution.
+!              Remove all the commented lines and blank lines before the 
+!              execution.
 !-------------------------------------------------------------------------------
-
+!
 !-------------------------------------------------------------------------------
 ! Legend:
 !    !    beginning of a comment line
@@ -35,7 +36,7 @@
 !    !>>> end of a section to be filled with input data
 !    =    start of a variable value
 !-------------------------------------------------------------------------------
-
+!
 !-------------------------------------------------------------------------------
 ![?] <res_fact>: resolution factor (ratio between the output and the input 
 !    spatial resolution)
