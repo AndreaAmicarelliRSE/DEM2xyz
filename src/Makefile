@@ -70,7 +70,7 @@ $(wildcard ./Geometry/*.f90)
 MAIN_FILE_ROOT = ./Main/DEM2xyz
 
 EXE_CODE = \
-$(EXE_DIR)DEM2yxz_$(VERSION)_$(ID_COMPILER)$(ID_EXECUTION)
+$(EXE_DIR)DEM2xyz_$(VERSION)_$(ID_COMPILER)$(ID_EXECUTION)
 
 OBJECTS = $(patsubst %.f90,%.o,$(SOURCES))
 
