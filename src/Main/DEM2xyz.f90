@@ -38,6 +38,10 @@
 !              holds the priority.
 !              In the presence of a volume correction, two reference shapes are 
 !              available: "reservoir" and "volcanic lake".
+!              The output rectangular DEM can be a sub-domain of the input DEM. 
+!              The edge coordinates to cut the output DEM are provided in input.
+!              The cut procedure is a post-processing task which does not 
+!              affect the other tasks.
 !              DEM2xyz v.2.0 is compatible with SPHERA v.9.0.0 (RSE SpA).
 !              Variables:
 !              input variables (ref. template of the main input file)
@@ -89,11 +93,13 @@ logical :: test_logical
 integer :: i_in,j_in,i_out,j_out,n_col_in,n_col_out,n_row,res_fact,n_points_in
 integer :: n_points_out,i_aux,j_aux,n_digging_regions,i_reg,test_integer
 integer :: i_bath,aux_integer,i_close,j_close,j2_out,i2_out,n_bathymetries
-integer :: alloc_stat
+integer :: alloc_stat,i_out_cut_min,i_out_cut_max,j_out_cut_min,j_out_cut_max
 double precision :: dx,dy,abs_mean_latitude,denom,distance,x_in,x_out,y_in,y_out
 double precision :: dis,dis2,min_dis2,z_Pint,dis_Pint_Pcoast,aux_scalar
-double precision :: dis_Pdown_Pint,aux_scalar_2,aux_scalar_3
-double precision :: dis3
+double precision :: dis_Pdown_Pint,aux_scalar_2,aux_scalar_3,x_inp_min,y_inp_min
+double precision :: dis3,x_inp_cut_min,y_inp_cut_min,x_inp_cut_max,y_inp_cut_max
+double precision :: dy_cut_min,dy_cut_max,dx_cut_min
+double precision :: dx_cut_max
 double precision :: point(2),point2(2),point_plus_normal(2),normal(2),normal2(2)
 double precision :: point_coast(2),Pint(2)
 logical,dimension(:),allocatable :: volume_flag
@@ -192,8 +198,8 @@ write(*,*) "Reading DEM file, DEM2xyz main input file and pre-processing. "
 open(11,file='DEM.dem')
 read(11,'(a14,i15)') char_aux,n_col_in
 read(11,'(a14,i15)') char_aux,n_row
-read(11,'(a)')
-read(11,'(a)')
+read(11,*) char_aux,x_inp_min
+read(11,*) char_aux,y_inp_min
 read(11,'(a14,f15.7)') char_aux,dy
 if (.not.allocated(mat_z_in)) then
    allocate(mat_z_in(n_row,n_col_in),STAT=alloc_stat)
@@ -213,6 +219,8 @@ enddo
 close(11)
 open(12,file='DEM2xyz.inp')
 read(12,*) res_fact,abs_mean_latitude,n_digging_regions,n_bathymetries
+read(12,*) x_inp_cut_min,y_inp_cut_min
+read(12,*) x_inp_cut_max,y_inp_cut_max
 if (n_digging_regions>0) then
    if (.not.allocated(n_digging_vertices)) then
       allocate(n_digging_vertices(n_digging_regions),STAT=alloc_stat)
@@ -440,24 +448,30 @@ if (n_bathymetries>0) then
    enddo
 endif
 close(12)
+! Conversion from geograghic to cartographic coordinates and first assessment 
+! of the number of output columns
+dx_cut_min = x_inp_cut_min - x_inp_min
+dy_cut_min = y_inp_cut_min - y_inp_min
+dx_cut_max = x_inp_cut_max - x_inp_min
+dy_cut_max = y_inp_cut_max - y_inp_min
 if (abs_mean_latitude>=0.d0) then
-! Conversion degrees to radians 
-abs_mean_latitude = abs_mean_latitude / 180.d0 * 3.1415926
-! Conversion (lon,lat) in (°) to (X,Y) in (m) for dx and dy
-! Linear unit discretization along the same parallel/latitude due to changing 
-! in longitude according to the DEM input discretization
-   dx = dy * (111412.84d0 * dcos(abs_mean_latitude) - 93.5d0 * dcos(3.d0 *     &
-        abs_mean_latitude) + 0.118d0 * dcos(5.d0 * abs_mean_latitude))
-! Linear unit discretization along the same meridian/longitude due to changing 
-! in latitude according to the DEM input discretization
-   dy = dy * (111132.92d0 - 559.82d0 * dcos(2.d0 * abs_mean_latitude) +        &
-        1.175d0 * dcos(4.d0 * abs_mean_latitude) - 0.0023d0 * dcos(6.d0 *      &
-        abs_mean_latitude))
+! At this stage dx is not initialized and should be equal to dy
+   call delta_lon_lat_to_delta_x_y(dy,dy,abs_mean_latitude,dx,dy)
+   call delta_lon_lat_to_delta_x_y(dx_cut_min,dy_cut_min,abs_mean_latitude,    &
+      dx_cut_min,dy_cut_min)
+   call delta_lon_lat_to_delta_x_y(dx_cut_max,dy_cut_max,abs_mean_latitude,    &
+      dx_cut_max,dy_cut_max)
    n_col_out = floor(n_col_in * dx / dy)
    else
       dx = dy
       n_col_out = n_col_in
 endif
+! Assessment of the indices to cut the output DEM. Pay attention to the format 
+!    of the ".dem" files: see below.
+i_out_cut_min = n_row - int((dy_cut_max) / dy)
+i_out_cut_max = n_row - int((dy_cut_min) / dy)
+j_out_cut_min = int((dx_cut_min) / dx) + 1
+j_out_cut_max = int((dx_cut_max) / dx) + 1
 if (.not.allocated(mat_z_out)) then
    allocate(mat_z_out(n_row,n_col_out),STAT=alloc_stat)
    if (alloc_stat/=0) then
@@ -510,23 +524,29 @@ write(*,*) "Possible grid interpolation, possible digging/filling DEM ",       &
 open(13,file="xyz_no_extrusion.txt")
 write(13,'(a)') '           x(m)          y(m)           z(m)           z   '
 n_points_in = n_row * n_col_in / res_fact / res_fact
-n_points_out = n_row * n_col_out / res_fact / res_fact
+n_points_out = (i_out_cut_max - i_out_cut_min + 1) * (j_out_cut_max -          &
+               j_out_cut_min + 1) / res_fact / res_fact
 write(*,'(a,i15)') 'Number of vertices in the input "DEM" file: ',n_points_in
 write(*,'(a,i15)') 'Number of vertices in the output "xyz" file: ',n_points_out
+! Pay attention: 
+!    rows represent y, columns x
+!    the ".dem" points are ordered from top-left to bottom-right: provided a 
+!       given row / column, x increases / is constant and y is constant / 
+!       decreases;  
 do j_out=1,n_col_out,res_fact
+   x_out = (j_out - 1) * dy + dy / 2.d0
    do i_out=1,n_row,res_fact
-      x_out = (j_out - 1) * dy + dy / 2.d0
       y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
-      if (abs_mean_latitude>=0.d0) then      
+      if (abs_mean_latitude>=0.d0) then
 ! Interpolation: inverse of the distance**2
          denom = 0.d0
          j_aux = nint((j_out - 0.5) * real(dy / dx) + 0.5)
          i_aux = i_out
          do j_in=(j_aux-1),(j_aux+1)
+            x_in = (j_in - 1) * dx + dx / 2.d0
             do i_in=(i_aux-1),(i_aux+1)
                if ((i_in<1).or.(i_in>n_row).or.(j_in<1).or.(j_in>n_col_in))    &
                   cycle
-               x_in = (j_in - 1) * dx + dx / 2.d0
                y_in = (n_row + 1 - i_in) * dy - dy / 2.d0
                distance = dsqrt((x_in - x_out) ** 2 + (y_in - y_out) ** 2)
                if (distance<=dy) then
@@ -613,13 +633,16 @@ do j_out=1,n_col_out,res_fact
             mat_z_out(i_out,j_out) = z_digging_regions(i_reg)
          endif
       enddo
-      write(13,'(4(F15.4))') x_out,y_out,mat_z_out(i_out,j_out),               &
-         mat_z_out(i_out,j_out)
+      if ((i_out>=i_out_cut_min).and.(i_out<=i_out_cut_max).and.               &
+         (j_out>=j_out_cut_min).and.(j_out<=j_out_cut_max)) then
+         write(13,'(4(F15.4))') x_out,y_out,mat_z_out(i_out,j_out),            &
+            mat_z_out(i_out,j_out)
+      endif
    enddo
 enddo
 close(13)
 if (n_bathymetries>0) then
-   write(*,*) "Coastline detections. "   
+   write(*,*) "Coastline detections. "
 ! Coastline detections
    do j_out=1,n_col_out,res_fact
       do i_out=1,n_row,res_fact
@@ -833,10 +856,13 @@ if (n_bathymetries>0) then
    write(14,'(a)') '           x(m)          y(m)           z(m)           z   '
    do j_out=1,n_col_out,res_fact
       do i_out=1,n_row,res_fact
-         x_out = (j_out - 1) * dy + dy / 2.d0
-         y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
-         write(14,'(4(F15.4))') x_out,y_out,mat_z_out(i_out,j_out),            &
-            mat_z_out(i_out,j_out)
+         if ((i_out>=i_out_cut_min).and.(i_out<=i_out_cut_max).and.            &
+            (j_out>=j_out_cut_min).and.(j_out<=j_out_cut_max)) then
+            x_out = (j_out - 1) * dy + dy / 2.d0
+            y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
+            write(14,'(4(F15.4))') x_out,y_out,mat_z_out(i_out,j_out),         &
+               mat_z_out(i_out,j_out)
+         endif
       enddo
    enddo
    close(14)
@@ -844,10 +870,13 @@ if (n_bathymetries>0) then
    write(15,'(a)') '           x(m)          y(m)           z(m)           z   '
    do j_out=1,n_col_out,res_fact
       do i_out=1,n_row,res_fact
-         x_out = (j_out - 1) * dy + dy / 2.d0
-         y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
-         write(15,'(4(F15.4))') x_out,y_out,weight(1,i_out,j_out),             &
-            weight(1,i_out,j_out)
+         if ((i_out>=i_out_cut_min).and.(i_out<=i_out_cut_max).and.            &
+            (j_out>=j_out_cut_min).and.(j_out<=j_out_cut_max)) then
+            x_out = (j_out - 1) * dy + dy / 2.d0
+            y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
+            write(15,'(4(F15.4))') x_out,y_out,weight(1,i_out,j_out),          &
+               weight(1,i_out,j_out)
+         endif
       enddo
    enddo
    close(15)

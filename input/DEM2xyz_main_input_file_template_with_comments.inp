@@ -51,6 +51,19 @@
 ___ ___ ___ ___
 !>>>****************************************************************************
 !-------------------------------------------------------------------------------
+![?] (<x_inp_cut_min>;<y_inp_cut_min>): lower-left input point (defined in the 
+!    input reference system) to cut the output DEM
+![?] (<x_inp_cut_max>;<y_inp_cut_max>): upper-right input point (defined in the 
+!    input reference system) to cut the output DEM
+!-------------------------------------------------------------------------------
+![*] <x_inp_cut_min> <y_inp_cut_min> 
+![*] <x_inp_cut_max> <y_inp_cut_max>
+!-------------------------------------------------------------------------------
+!<<<****************************************************************************
+___ ___
+___ ___
+!>>>****************************************************************************
+!-------------------------------------------------------------------------------
 ![?] <z_digging_regions(i)>: height of the i-th digging/filling region
 ![?] <n_digging_vertices(i)>: number of vertices of the polygon representing the 
 !    i-th digging/filling region (3-6)

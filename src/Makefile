@@ -65,7 +65,8 @@ endif
 EXE_DIR = ../exe/
 
 SOURCES = \
-$(wildcard ./Geometry/*.f90)
+$(wildcard ./Geometry/*.f90) \
+$(wildcard ./Topography/*.f90)
 
 MAIN_FILE_ROOT = ./Main/DEM2xyz
 
