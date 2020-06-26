@@ -23,7 +23,7 @@
 
 #    CODE VERSION
 #       Suggested values:
-#          " v9_UserInitials_CommitData"
+#          " vx_UserInitials_CommitData"
 VERSION = v2_
 
 #    COMPILER
