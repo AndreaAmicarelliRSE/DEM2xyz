@@ -196,11 +196,11 @@ n_bathymetries = 0
 write(*,*) "DEM2xyz v.2.0 (RSE SpA) is running. DEM2xyz is a DEM manager tool. "
 write(*,*) "Reading DEM file, DEM2xyz main input file and pre-processing. "
 open(11,file='DEM.dem')
-read(11,'(a14,i15)') char_aux,n_col_in
-read(11,'(a14,i15)') char_aux,n_row
+read(11,*) char_aux,n_col_in
+read(11,*) char_aux,n_row
 read(11,*) char_aux,x_inp_min
 read(11,*) char_aux,y_inp_min
-read(11,'(a14,f15.7)') char_aux,dy
+read(11,*) char_aux,dy
 if (.not.allocated(mat_z_in)) then
    allocate(mat_z_in(n_row,n_col_in),STAT=alloc_stat)
    if (alloc_stat/=0) then
@@ -212,7 +212,7 @@ if (.not.allocated(mat_z_in)) then
    endif
 endif
 mat_z_in = 0.d0
-read(11,'(a)')
+read(11,*)
 do i_in=1,n_row
    read(11,*) mat_z_in(i_in,:)
 enddo
