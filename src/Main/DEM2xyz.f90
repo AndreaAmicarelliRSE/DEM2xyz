@@ -42,6 +42,9 @@
 !              The edge coordinates to cut the output DEM are provided in input.
 !              The cut procedure is a post-processing task which does not 
 !              affect the other tasks.
+!              A translation vector is added to the output grid point positions 
+!              so that the origin of the reference system in output is chosen 
+!              by the user by means of the input file.
 !              DEM2xyz v.2.0 is compatible with SPHERA v.9.0.0 (RSE SpA).
 !              Variables:
 !              input variables (ref. template of the main input file)
@@ -98,7 +101,7 @@ double precision :: dx,dy,abs_mean_latitude,denom,distance,x_in,x_out,y_in,y_out
 double precision :: dis,dis2,min_dis2,z_Pint,dis_Pint_Pcoast,aux_scalar
 double precision :: dis_Pdown_Pint,aux_scalar_2,aux_scalar_3,x_inp_min,y_inp_min
 double precision :: dis3,x_inp_cut_min,y_inp_cut_min,x_inp_cut_max,y_inp_cut_max
-double precision :: dy_cut_min,dy_cut_max,dx_cut_min
+double precision :: dy_cut_min,dy_cut_max,dx_cut_min,x_trans_out,y_trans_out
 double precision :: dx_cut_max
 double precision :: point(2),point2(2),point_plus_normal(2),normal(2),normal2(2)
 double precision :: point_coast(2),Pint(2)
@@ -221,6 +224,7 @@ open(12,file='DEM2xyz.inp')
 read(12,*) res_fact,abs_mean_latitude,n_digging_regions,n_bathymetries
 read(12,*) x_inp_cut_min,y_inp_cut_min
 read(12,*) x_inp_cut_max,y_inp_cut_max
+read(12,*) x_trans_out,y_trans_out
 if (n_digging_regions>0) then
    if (.not.allocated(n_digging_vertices)) then
       allocate(n_digging_vertices(n_digging_regions),STAT=alloc_stat)
@@ -635,8 +639,12 @@ do j_out=1,n_col_out,res_fact
       enddo
       if ((i_out>=i_out_cut_min).and.(i_out<=i_out_cut_max).and.               &
          (j_out>=j_out_cut_min).and.(j_out<=j_out_cut_max)) then
+         x_out = x_out + x_trans_out
+         y_out = y_out + y_trans_out
          write(13,'(4(F15.4))') x_out,y_out,mat_z_out(i_out,j_out),            &
             mat_z_out(i_out,j_out)
+         x_out = x_out - x_trans_out
+         y_out = y_out - y_trans_out
       endif
    enddo
 enddo
@@ -858,8 +866,8 @@ if (n_bathymetries>0) then
       do i_out=1,n_row,res_fact
          if ((i_out>=i_out_cut_min).and.(i_out<=i_out_cut_max).and.            &
             (j_out>=j_out_cut_min).and.(j_out<=j_out_cut_max)) then
-            x_out = (j_out - 1) * dy + dy / 2.d0
-            y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
+            x_out = (j_out - 1) * dy + dy / 2.d0 + x_trans_out
+            y_out = (n_row + 1 - i_out) * dy - dy / 2.d0 + y_trans_out
             write(14,'(4(F15.4))') x_out,y_out,mat_z_out(i_out,j_out),         &
                mat_z_out(i_out,j_out)
          endif
@@ -872,8 +880,8 @@ if (n_bathymetries>0) then
       do i_out=1,n_row,res_fact
          if ((i_out>=i_out_cut_min).and.(i_out<=i_out_cut_max).and.            &
             (j_out>=j_out_cut_min).and.(j_out<=j_out_cut_max)) then
-            x_out = (j_out - 1) * dy + dy / 2.d0
-            y_out = (n_row + 1 - i_out) * dy - dy / 2.d0
+            x_out = (j_out - 1) * dy + dy / 2.d0 + x_trans_out
+            y_out = (n_row + 1 - i_out) * dy - dy / 2.d0 + y_trans_out
             write(15,'(4(F15.4))') x_out,y_out,weight(1,i_out,j_out),          &
                weight(1,i_out,j_out)
          endif
