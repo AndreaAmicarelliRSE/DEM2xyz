@@ -472,10 +472,10 @@ if (abs_mean_latitude>=0.d0) then
 endif
 ! Assessment of the indices to cut the output DEM. Pay attention to the format 
 !    of the ".dem" files: see below.
-i_out_cut_min = n_row - int((dy_cut_max) / dy)
-i_out_cut_max = n_row - int((dy_cut_min) / dy)
-j_out_cut_min = int((dx_cut_min) / dx) + 1
-j_out_cut_max = int((dx_cut_max) / dx) + 1
+i_out_cut_min = n_row - int(dy_cut_max / dy)
+i_out_cut_max = n_row - int(dy_cut_min / dy)
+j_out_cut_min = int(dx_cut_min / dx) + 1
+j_out_cut_max = int(dx_cut_max / dx) + 1
 if (.not.allocated(mat_z_out)) then
    allocate(mat_z_out(n_row,n_col_out),STAT=alloc_stat)
    if (alloc_stat/=0) then

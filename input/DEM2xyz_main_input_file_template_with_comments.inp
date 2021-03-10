@@ -52,7 +52,8 @@ ___ ___ ___ ___
 !>>>****************************************************************************
 !-------------------------------------------------------------------------------
 ![?] (<x_inp_cut_min>;<y_inp_cut_min>): lower-left input point (defined in the 
-!    input reference system) to cut the output DEM
+!    input reference system) to cut the output DEM. The cut procedure only 
+!    influences the output writing.
 ![?] (<x_inp_cut_max>;<y_inp_cut_max>): upper-right input point (defined in the 
 !    input reference system) to cut the output DEM
 !-------------------------------------------------------------------------------
