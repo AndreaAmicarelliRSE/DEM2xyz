@@ -67,7 +67,8 @@ ___ ___
 !-------------------------------------------------------------------------------
 ![?] (<x_trans_out>;<y_trans_out>): translation vector added to the output grid 
 !    point positions so that the origin of the reference system in output is 
-!    chosen by the user.
+!    chosen by the user. <x_trans_out>=0 means that the origin is x_ll 
+!    (x_lower_left) of the DEM or DTM (x_ll=x_ll_centre-0.5*dx).
 !-------------------------------------------------------------------------------
 ![*] <x_trans_out> <y_trans_out>
 !-------------------------------------------------------------------------------
