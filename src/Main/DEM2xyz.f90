@@ -16,7 +16,8 @@
 ! along with DEM2xyz. If not, see <http://www.gnu.org/licenses/>.
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-! Description. “DEM2xyz v.2.0” (RSE SpA) reads a “DEM” file and writes the 
+! Description. “DEM2xyz v.2.0” (RSE SpA) reads a “.asc” input grid file and 
+!              writes the 
 !              associated DEM in a corresponding “xyz” file, possibly 
 !              changing the spatial resolution (as requested by the user). 
 !              In case the absolute value of the mean latitude is provided with
@@ -118,7 +119,7 @@ double precision,dimension(:,:),allocatable :: pos_res_upstream
 logical,dimension(:,:,:),allocatable :: reservoir,coastline
 double precision,dimension(:,:,:),allocatable :: digging_vertices,weight
 double precision,dimension(:,:,:),allocatable :: vertices_around_res
-character(len=100) :: char_aux
+character(len=100) :: char_aux,input_grid_file_name
 !------------------------
 ! Explicit interfaces
 !------------------------
@@ -198,29 +199,8 @@ n_bathymetries = 0
 !------------------------
 write(*,*) "DEM2xyz v.2.0 (RSE SpA) is running. DEM2xyz is a DEM manager tool. "
 write(*,*) "Reading DEM file, DEM2xyz main input file and pre-processing. "
-open(11,file='DEM.dem')
-read(11,*) char_aux,n_col_in
-read(11,*) char_aux,n_row
-read(11,*) char_aux,x_inp_min
-read(11,*) char_aux,y_inp_min
-read(11,*) char_aux,dy
-if (.not.allocated(mat_z_in)) then
-   allocate(mat_z_in(n_row,n_col_in),STAT=alloc_stat)
-   if (alloc_stat/=0) then
-      write(0,*) 'Allocation of "mat_z_in" failed; the execution terminates ', &
-         'here.'
-      stop
-      else
-         write(*,*) 'Allocation of "mat_z_in" is successfully completed.'
-   endif
-endif
-mat_z_in = 0.d0
-read(11,*)
-do i_in=1,n_row
-   read(11,*) mat_z_in(i_in,:)
-enddo
-close(11)
 open(12,file='DEM2xyz.inp')
+read(12,*) input_grid_file_name
 read(12,*) res_fact,abs_mean_latitude,n_digging_regions,n_bathymetries
 read(12,*) x_inp_cut_min,y_inp_cut_min
 read(12,*) x_inp_cut_max,y_inp_cut_max
@@ -452,6 +432,28 @@ if (n_bathymetries>0) then
    enddo
 endif
 close(12)
+open(11,file=trim(input_grid_file_name))
+read(11,*) char_aux,n_col_in
+read(11,*) char_aux,n_row
+read(11,*) char_aux,x_inp_min
+read(11,*) char_aux,y_inp_min
+read(11,*) char_aux,dy
+if (.not.allocated(mat_z_in)) then
+   allocate(mat_z_in(n_row,n_col_in),STAT=alloc_stat)
+   if (alloc_stat/=0) then
+      write(0,*) 'Allocation of "mat_z_in" failed; the execution terminates ', &
+         'here.'
+      stop
+      else
+         write(*,*) 'Allocation of "mat_z_in" is successfully completed.'
+   endif
+endif
+mat_z_in = 0.d0
+read(11,*)
+do i_in=1,n_row
+   read(11,*) mat_z_in(i_in,:)
+enddo
+close(11)
 ! Conversion from geograghic to cartographic coordinates and first assessment 
 ! of the number of output columns
 dx_cut_min = x_inp_cut_min - x_inp_min
@@ -471,7 +473,7 @@ if (abs_mean_latitude>=0.d0) then
       n_col_out = n_col_in
 endif
 ! Assessment of the indices to cut the output DEM. Pay attention to the format 
-!    of the ".dem" files: see below.
+!    of the ".asc" files: see below.
 i_out_cut_min = n_row - int(dy_cut_max / dy)
 i_out_cut_max = n_row - int(dy_cut_min / dy)
 j_out_cut_min = int(dx_cut_min / dx) + 1
@@ -530,11 +532,11 @@ write(13,'(a)') '           x(m)          y(m)           z(m)           z   '
 n_points_in = n_row * n_col_in / res_fact / res_fact
 n_points_out = (i_out_cut_max - i_out_cut_min + 1) * (j_out_cut_max -          &
                j_out_cut_min + 1) / res_fact / res_fact
-write(*,'(a,i15)') 'Number of vertices in the input "DEM" file: ',n_points_in
+write(*,'(a,i15)') 'Number of vertices in the input ".asc" file: ',n_points_in
 write(*,'(a,i15)') 'Number of vertices in the output "xyz" file: ',n_points_out
 ! Pay attention: 
 !    rows represent y, columns x
-!    the ".dem" points are ordered from top-left to bottom-right: provided a 
+!    the ".asc" points are ordered from top-left to bottom-right: provided a 
 !       given row / column, x increases / is constant and y is constant / 
 !       decreases;  
 do j_out=1,n_col_out,res_fact
