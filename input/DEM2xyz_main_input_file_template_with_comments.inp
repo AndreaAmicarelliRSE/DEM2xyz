@@ -38,8 +38,10 @@
 !-------------------------------------------------------------------------------
 !
 !-------------------------------------------------------------------------------
-![?] DEM2xyz only accepts input ArcInfo ASCII Grid (".asc") files with 
-!    isotropic and uniform spatial resolution.
+![?] <input_grid_file_name>. DEM2xyz only accepts input ArcInfo ASCII Grid 
+!    (".asc") files with isotropic and uniform spatial resolution. DEM2xyz does 
+!    not support the ".asc" standard for "xllcenter" and "yllcenter": please 
+!    use "xllcorner" and "yllcorner".
 !-------------------------------------------------------------------------------
 ![*] <input_grid_file_name>
 !-------------------------------------------------------------------------------
